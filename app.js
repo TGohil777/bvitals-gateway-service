@@ -1,11 +1,11 @@
+require('dotenv').config()
 const express = require ('express');
 const bodyParser = require ('body-parser')
-const cors = require ("cors")
-const axios = require ('axios')
 const morgan = require ('morgan')
-const router = require ('Router')
+const fs= require('fs')
+const chalk = require('chalk')
+const proxy = require('express-http-proxy')
 const app = express();
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
@@ -20,12 +20,13 @@ morgan.token('id', function getId(req) {
   }
   
   app.use(morgan(':id :method :url :response-time', {
-    stream: fs.createWriteStream('./access.log',{flags: 'a'})
+    stream: fs.createWriteStream('./identity.log',{flags: 'a'})
   }));
   
-  
-  app.listen(process.env.PORT, () => {
-      console.log(chalk.green(`Express server listening on port ${process.env.PORT}`));
-    });
-  
 
+  app.use('/api/v1/gateway', require('./routes/auth'));
+  
+  app.listen(8081, () => {
+      console.log(chalk.green(`Express server listening on port ${process.env.PORT}`));
+  });
+  
