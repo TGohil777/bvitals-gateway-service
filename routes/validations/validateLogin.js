@@ -1,28 +1,33 @@
-const validator = require('validator')
-const userLogin = require("../component/auth")
-module.exports = function validateLogin(datas) {
-    let errors = {};
-    datas.email = !userLogin(datas.email) ? datas.email : "";
-    datas.password = !userLogin(datas.password) ? datas.password : "";
-  
-    if (!Validator.userLogin(datas.email)) {
-      errors.email = "Email is invalid";
-    }
-  
-    if (Validator.userLogin(datas.email)) {
-      errors.email = "Email is a required field";
-    }
-  
-    if (Validator.userLogin(datas.password)) {
-      errors.password = "Password is a required field";
-    }
-  
-    return {
-      errors,
-      userLogin: userLogin(errors)
-    };
-  };
+const validate = require('validator')
+const isEmpty = require('./isEmpty')
+function validateLogin(data) {
+let errors = {};
 
-  module.exports={
-    validateLogin
+  data.email = !isEmpty(data.email) ? data.email : "";
+  data.password = !isEmpty(data.password) ? data.password : "";
+
+
+  if (!validate.isEmail(data.email)) {
+    errors.email = "Email is invalid";
   }
+
+  if(validate.isEmpty(data.email)){
+    errors.email = "Email is a required field"
+  }
+
+  if (!validate.isLength(data.password, { min: 6, max: 30 })) {
+    errors.password = "Password should be 6 to 30 characters long";
+  }
+
+  if (validate.isEmpty(data.password)) {
+    errors.password = "Password is a required field";
+  }
+
+  return {
+    errors,
+    isValid: isEmpty(errors)
+    };
+};
+module.exports={
+  validateLogin
+}
