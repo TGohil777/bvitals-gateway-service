@@ -1,21 +1,14 @@
-const { loginUser } = require('../services/auth');
+const { loginUser }  = require('../services/auth');
 
-async function userLogin(data) {
-    let errros = {}
-    let data = {};
+const userLogin = async (data, next) => {
     try {
         const response = await loginUser(data);
-        data = response.data;
+        next(null, response.data);
     } catch (err) {
-        errros.auth = err;
-    }
-
-    return {
-        errros,
-        data
+        errors = err.message
+        next(errors, null);
     }
 }
-
 module.exports = {
     userLogin
 }

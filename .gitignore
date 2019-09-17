@@ -1,3 +1,9 @@
+/.history
+/coverage
+/seeders
+/node_modules
+**.lock
+.history
 
 # Created by https://www.gitignore.io/api/node
 # Edit at https://www.gitignore.io/?templates=node
