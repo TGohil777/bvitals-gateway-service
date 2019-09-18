@@ -8,4 +8,16 @@ const instance = axios.create({
   }
 })
 
+instance.interceptors.response.use((response) => {
+  return response;
+}, function (error) {
+  if (error.response.status === 401) {
+    return Promise.reject(error.response.data);
+  }
+
+  if (error.response.status === 400) {
+    return Promise.reject(error.response.data);
+  }
+});
+
 module.exports = instance;
