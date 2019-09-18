@@ -6,7 +6,6 @@ let errors = {};
   data.email = !isEmpty(data.email) ? data.email : "";
   data.password = !isEmpty(data.password) ? data.password : "";
 
-
   if (!validate.isEmail(data.email)) {
     errors.email = "Email is invalid";
   }
@@ -22,12 +21,12 @@ let errors = {};
   if (validate.isEmpty(data.password)) {
     errors.password = "Password is a required field";
   }
-
   return {
     errors,
     isValid: isEmpty(errors)
-    };
+    }
 };
+
 module.exports={
   validateLogin
 }

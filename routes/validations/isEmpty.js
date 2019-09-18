@@ -1,4 +1,3 @@
-const validate = require ('validator')
 const isEmpty = value =>
   value === undefined ||
   value === null ||
