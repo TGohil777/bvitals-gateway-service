@@ -5,8 +5,12 @@ const morgan = require ('morgan')
 const fs= require('fs')
 const chalk = require('chalk')
 const app = express();
+const fileUpload = require('express-fileupload')
+app.use(fileUpload())
 app.use(bodyParser.json());
-
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 morgan.token('id', function getId(req) {
     return req.id;
 })
