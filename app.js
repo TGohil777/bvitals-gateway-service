@@ -21,7 +21,7 @@ app.use(morgan(':id :method :url :response-time', {
 
 
 app.use('/api/v1/gateway', require('./routes/auth'));
-
+app.use('/api/v1/gateway', require('./routes/practice'));
 
 app.listen(process.env.PORT, () => {
   console.log(chalk.green(`Express server listening on port ${process.env.PORT}`));

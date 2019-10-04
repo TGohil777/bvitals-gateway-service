@@ -29,8 +29,11 @@ authRouter.route('/change-password').post(async (req, res) => {
 
 })
 
+authRouter.route('/users').get(async (req, res)=> {
+    
+})
 authRouter.route('/user').put(async (req, res) => {
-
+    
 });
 
 module.exports = authRouter;
