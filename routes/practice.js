@@ -1,13 +1,11 @@
 const express = require('express');
 const practiceRouter = express.Router();
 const validateOnboardPractice = require('./validations/onboard-practice')
-const {createPractice} = require('./services/practice')
-const {organizations} =  require('./services/practice')
-const {singleOrganization} =  require('./services/practice')
-const {singleOrgLocation} = require('./services/practice')
-const {singleOrgUsers} = require('./services/practice')
-const {editOrganization} = require('./services/practice')
-const {editLocation} = require('./services/practice')
+const {createPractice, practiceLogoUpload, organizations, singleOrganization, singleOrgLocation,
+    singleOrgUsers, editOrganization, editLocation} = require('./services/practice')
+
+const {getCurrentUser} = require('./services/auth')
+//endpoint for onboarding a practice
 practiceRouter.route('/onboard-practice').post(async (req, res) => {
     const {errors, isValid} = await validateOnboardPractice(req.body)
     if (!isValid) {
@@ -26,7 +24,36 @@ practiceRouter.route('/onboard-practice').post(async (req, res) => {
         }
     }
 })
-//---------------------------------------------------------------------------------------------------------
+
+/** 
+*   this endpoint has been created, so that a practice can have a logo for itself. 
+*   this will further call document-service's /uploadlogo endpoint, which will have a record of the
+*   image/logo path.
+*/
+practiceRouter.route('/upload').post(async (req, res) => {
+    let errors = {};
+    const token = req.headers['authorization'];
+    try {
+        if(!token){
+            errors.missingtoken = 'Token is missing.'
+            throw errors;
+        }
+        //checking the current user from the identity's service current-user endpoint.
+        await getCurrentUser(token);
+        //sending the logo image to document service and expecting a message and url in return.
+        const response = await practiceLogoUpload(token, req.files.logourl)
+        res.status(200).json(response.data)
+    } catch (err) {
+        if (!err.isValid) {
+            errors.unauthorized = 'User not authorized.';
+        } else {
+            errors = err;
+        }
+        res.status(400).json(errors)
+    }
+})
+
+
 practiceRouter.route('/list-organization').get(async (req, res) => {
     const token = req.headers['authorization'];
     try{
@@ -42,7 +69,6 @@ practiceRouter.route('/list-organization').get(async (req, res) => {
         })
     }
 });
-//-----------------------------------------------------------------------------------------------------------------
 practiceRouter.route('/single-organization/:id').get(async (req, res) => {
     const token = req.headers['authorization'];
     const {id} = req.params
@@ -57,7 +83,7 @@ practiceRouter.route('/single-organization/:id').get(async (req, res) => {
         })
     }
 });
-//----------------------------------------------------------------------------------------------------------------------
+
 practiceRouter.route('/associated-locations/:id').get(async (req, res) => {
     const token = req.headers['authorization'];
     const {id} = req.params
@@ -72,11 +98,11 @@ practiceRouter.route('/associated-locations/:id').get(async (req, res) => {
         })
     }
 });
-//---------------------------------------------------------------------------------------------------------------------
 
-practiceRouter.route('/associated-users/:id').get(async (req, res) => {
+
+practiceRouter.route('/associated-users').get(async (req, res) => {
     const token = req.headers['authorization'];
-    const {id} = req.params
+    const {id} = req.query
     try{
         if (!token) throw new Error('User is unauthorized')
         const response = await singleOrgUsers(token,id)
@@ -88,7 +114,7 @@ practiceRouter.route('/associated-users/:id').get(async (req, res) => {
         })
     }
 });
-//------------------------------------------------------------------------------------------------------------------
+
 practiceRouter.route('/edit-organization/:orgID').put(async (req, res) => {
     const token = req.headers['authorization'];
     try{
@@ -116,5 +142,5 @@ practiceRouter.route('/edit-locations/:orgID').put(async (req, res) => {
         });
     };
 });
-//--------------------------------------------------------------------------------------------------------------------
+
 module.exports = practiceRouter;
