@@ -39,13 +39,13 @@ practiceRouter.route('/upload').post(async (req, res) => {
             errors.missingtoken = 'Token is missing.'
             throw errors;
         }
-        //checking the current user from the identity's service current-user endpoint.
+        //checking the current user from the identity service's current-user endpoint.
         await getCurrentUser(token);
         //sending the logo image to document service and expecting a message and url in return.
         const response = await practiceLogoUpload(token, req.files.logourl)
         res.status(200).json(response.data)
     } catch (err) {
-        if (!err.isValid) {
+        if (err.isValid===false) {
             errors.unauthorized = 'User not authorized.';
         } else {
             errors = err;
