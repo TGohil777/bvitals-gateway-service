@@ -1,10 +1,9 @@
 const express = require('express');
 const practiceRouter = express.Router();
 const validateOnboardPractice = require('./validations/onboard-practice')
-const {organizations} =  require('./services/practice')
-const {singleOrganization} =  require('./services/practice')
-const {singleOrgLocation} = require('./services/practice')
-const {createPractice, practiceLogoUpload} = require('./services/practice')
+const {createPractice, practiceLogoUpload, organizations, singleOrganization, singleOrgLocation,
+    singleOrgUsers, editOrganization, editLocation, deleteOrg} = require('./services/practice')
+
 const {getCurrentUser} = require('./services/auth')
 //endpoint for onboarding a practice
 practiceRouter.route('/onboard-practice').post(async (req, res) => {
@@ -39,13 +38,13 @@ practiceRouter.route('/upload').post(async (req, res) => {
             errors.missingtoken = 'Token is missing.'
             throw errors;
         }
-        //checking the current user from the identity's service current-user endpoint.
+        //checking the current user from the identity service's current-user endpoint.
         await getCurrentUser(token);
         //sending the logo image to document service and expecting a message and url in return.
         const response = await practiceLogoUpload(token, req.files.logourl)
         res.status(200).json(response.data)
     } catch (err) {
-        if (!err.isValid) {
+        if (err.isValid===false) {
             errors.unauthorized = 'User not authorized.';
         } else {
             errors = err;
@@ -54,21 +53,7 @@ practiceRouter.route('/upload').post(async (req, res) => {
     }
 })
 
-practiceRouter.route('/edit-practice').put(async (req, res) => {
-    try{
-        const {errors, data} = await practiceComponent.updatePractice(req.body)
-        if(!errors){
-            return res.status(200).json(data)
-        }else{
-            return res.status(401).json(errors)
-        }
-    }catch(err){
-        return res.status(400).json({
-            message : err.message
-        })
-    }
-})
-//---------------------------------------------------------------------------------------------------------
+
 practiceRouter.route('/list-organization').get(async (req, res) => {
     const token = req.headers['authorization'];
     try{
@@ -84,10 +69,9 @@ practiceRouter.route('/list-organization').get(async (req, res) => {
         })
     }
 });
-//-----------------------------------------------------------------------------------------------------------------
-practiceRouter.route('/single-organization').get(async (req, res) => {
+practiceRouter.route('/single-organization/:id').get(async (req, res) => {
     const token = req.headers['authorization'];
-    const {id} = req.query
+    const {id} = req.params
     try{
         if (!token) throw new Error('User is unauthorized')
         const response = await singleOrganization(token,id)
@@ -99,10 +83,10 @@ practiceRouter.route('/single-organization').get(async (req, res) => {
         })
     }
 });
-//----------------------------------------------------------------------------------------------------------------------
-practiceRouter.route('/associated-locations').get(async (req, res) => {
+
+practiceRouter.route('/associated-locations/:id').get(async (req, res) => {
     const token = req.headers['authorization'];
-    const {id} = req.query
+    const {id} = req.params
     try{
         if (!token) throw new Error('User is unauthorized')
         const response = await singleOrgLocation(token,id)
@@ -114,6 +98,65 @@ practiceRouter.route('/associated-locations').get(async (req, res) => {
         })
     }
 });
-//---------------------------------------------------------------------------------------------------------------------
+
+
+practiceRouter.route('/associated-users/:id').get(async (req, res) => {
+    const token = req.headers['authorization'];
+    const {id} = req.params
+    try{
+        if (!token) throw new Error('User is unauthorized')
+        const response = await singleOrgUsers(token,id)
+        if(!response) throw new Error('There was an error while displaying the details of the users!')
+        res.status(200).json(response.data);
+    }catch(err){
+        return res.status(400).json({
+            message : err.message
+        })
+    }
+});
+
+practiceRouter.route('/edit-organization/:orgID').put(async (req, res) => {
+    const token = req.headers['authorization'];
+    try{
+        if (!token) throw new Error('User is unauthorized')
+        const response = await editOrganization(token, req.params)
+        if(!response) throw new Error('There was an error while making the changes!')
+        res.status(200).json(response.data);
+    }catch(err){
+        return res.status(400).json({
+            message : err.message
+        });
+    };
+});
+
+practiceRouter.route('/edit-locations/:orgID').put(async (req, res) => {
+    const token = req.headers['authorization'];
+    try{
+        if (!token) throw new Error('User is unauthorized')
+        const response = await editLocation(token, req.params)
+        if(!response) throw new Error('There was an error while making the changes!')
+        res.status(200).json(response.data);
+    }catch(err){
+        return res.status(400).json({
+            message : err.message
+        });
+    };
+});
+
+practiceRouter.route('/delete-organization').put(async (req, res) => {
+    const token = req.headers['authorization'];
+    try{
+        if (!token) throw new Error('User is unauthorized')
+
+        const response = await deleteOrg(token, req.body)
+        if(!response) throw new Error('There was an error!')
+        res.status(200).json(response.data);
+    
+    }catch(err){
+        return res.status(400).json({
+            message : err.message
+        })
+    }
+});
 
 module.exports = practiceRouter;
